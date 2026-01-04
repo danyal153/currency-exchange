@@ -34,20 +34,39 @@ export default function Index() {
   const [grandTotal, setGrandTotal] = useState<number>(0);
 
   // Example: Hardcoded rates (replace with real API if needed)
-  const defaultRates: Record<string, number> = {
-    USD: 278,
-    MXN: 16.5,
-    KWD: 903,
-    INR: 3.35,
-    SAR: 74,
-    CHF: 310,
-    NOK: 26,
-    GBP: 355,
+  useEffect(() => {
+  const fetchRates = async () => {
+    try {
+      const response = await fetch(
+         "https://v6.exchangerate-api.com/v6/24054a470ff17349f1d108f0/latest/USD"
+      );
+      const data = await response.json();
+
+      if (data.result === "success") {
+        const pkrRate = data.conversion_rates.PKR;
+
+        const updatedRates: Record<string, number> = {
+          USD: pkrRate,
+          MXN: pkrRate / data.conversion_rates.MXN,
+          KWD: pkrRate / data.conversion_rates.KWD,
+          INR: pkrRate / data.conversion_rates.INR,
+          SAR: pkrRate / data.conversion_rates.SAR,
+          CHF: pkrRate / data.conversion_rates.CHF,
+          NOK: pkrRate / data.conversion_rates.NOK,
+          GBP: pkrRate / data.conversion_rates.GBP,
+        };
+
+        setRates(updatedRates);
+      }
+    } catch (error) {
+      console.log("Rate API Error:", error);
+      Alert.alert("Error", "Failed to fetch live exchange rates");
+    }
   };
 
-  useEffect(() => {
-    setRates(defaultRates);
-  }, []);
+  fetchRates();
+}, []);
+
 
   // Real-time history fetch
   useEffect(() => {
